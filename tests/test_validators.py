@@ -46,6 +46,28 @@ class TestToolCallValidator(unittest.TestCase):
         self.assertFalse(result.valid)
         self.assertIn("at least", result.error or "")
 
+    def test_advanced_material_preset_enum(self):
+        result = self.validator.validate(
+            "build_advanced_material_graph",
+            {
+                "object_name": "Cube",
+                "preset": "nonexistent",
+            },
+        )
+        self.assertFalse(result.valid)
+        self.assertIn("must be one of", result.error or "")
+
+    def test_advanced_material_valid(self):
+        result = self.validator.validate(
+            "build_advanced_material_graph",
+            {
+                "object_name": "Cube",
+                "preset": "glass",
+                "ior": 1.5,
+            },
+        )
+        self.assertTrue(result.valid)
+
 
 if __name__ == "__main__":
     unittest.main()
