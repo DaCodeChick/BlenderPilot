@@ -115,6 +115,31 @@ class TestToolCallValidator(unittest.TestCase):
             ).valid
         )
 
+    def test_sculpt_tools_validate(self):
+        self.assertTrue(
+            self.validator.validate("enter_sculpt_mode", {"object_name": "Cube"}).valid
+        )
+        self.assertTrue(
+            self.validator.validate(
+                "set_sculpt_brush", {"brush_name": "Draw", "use_frontface": True}
+            ).valid
+        )
+        self.assertTrue(
+            self.validator.validate(
+                "sculpt_draw_line_stroke",
+                {
+                    "object_name": "Cube",
+                    "start": [0.0, 0.0, 0.0],
+                    "end": [0.0, 0.0, 1.0],
+                },
+            ).valid
+        )
+        self.assertFalse(
+            self.validator.validate(
+                "set_sculpt_brush", {"brush_name": "Draw", "use_frontface": 1}
+            ).valid
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

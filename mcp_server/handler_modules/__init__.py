@@ -33,6 +33,17 @@ from .primitives import (
     set_scale,
 )
 from .scene import create_camera, create_light, setup_scene
+from .sculpt import (
+    enter_sculpt_mode,
+    sculpt_brush_stroke_path,
+    sculpt_draw_line_stroke,
+    sculpt_face_set_from_mask,
+    sculpt_mask_flood_fill,
+    sculpt_mesh_filter,
+    sculpt_symmetrize,
+    sculpt_voxel_remesh,
+    set_sculpt_brush,
+)
 from .texture_paint import assign_texture_paint_image, create_texture_image
 from .uv import uv_smart_project, uv_unwrap
 
@@ -73,4 +84,13 @@ HANDLERS = {
     "create_light": create_light,
     "create_camera": create_camera,
     "setup_scene": setup_scene,
+    "enter_sculpt_mode": enter_sculpt_mode,
+    "set_sculpt_brush": set_sculpt_brush,
+    "sculpt_face_set_from_mask": sculpt_face_set_from_mask,
+    "sculpt_mask_flood_fill": sculpt_mask_flood_fill,
+    "sculpt_mesh_filter": sculpt_mesh_filter,
+    "sculpt_symmetrize": sculpt_symmetrize,
+    "sculpt_brush_stroke_path": sculpt_brush_stroke_path,
+    "sculpt_draw_line_stroke": sculpt_draw_line_stroke,
+    "sculpt_voxel_remesh": sculpt_voxel_remesh,
 }

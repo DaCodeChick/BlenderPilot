@@ -80,6 +80,11 @@ class ToolCallValidator:
                 return ValidationResult(False, f"{field_name} must be a number")
             return ValidationResult(True)
 
+        if expected_type == "boolean":
+            if not isinstance(item, bool):
+                return ValidationResult(False, f"{field_name} must be a boolean")
+            return ValidationResult(True)
+
         if expected_type == "array":
             if not isinstance(item, list):
                 return ValidationResult(False, f"{field_name} must be an array")

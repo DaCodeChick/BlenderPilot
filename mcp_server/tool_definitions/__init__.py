@@ -8,6 +8,7 @@ from .materials import MATERIAL_TOOLS
 from .mesh_edit import MESH_EDIT_TOOLS
 from .modifiers import MODIFIER_TOOLS
 from .primitives import PRIMITIVE_TOOLS
+from .sculpt import SCULPT_TOOLS
 from .scene import SCENE_TOOLS
 from .texture_paint import TEXTURE_PAINT_TOOLS
 from .transforms import TRANSFORM_TOOLS
@@ -22,6 +23,7 @@ TOOLS: List[Dict[str, Any]] = [
     *UV_TOOLS,
     *TEXTURE_PAINT_TOOLS,
     *MATERIAL_TOOLS,
+    *SCULPT_TOOLS,
     *SCENE_TOOLS,
 ]
 
