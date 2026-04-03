@@ -49,7 +49,7 @@ class BLENDERPILOT_PT_main_panel(Panel):
         provider_name_map = {
             "openai": "OpenAI",
             "anthropic": "Anthropic",
-            "local": "Local (Ollama/LM Studio)",
+            "local": "Local",
         }
         provider_name = provider_name_map.get(provider, provider)
         box.label(text=f"Provider: {provider_name}", icon="NETWORK_DRIVE")

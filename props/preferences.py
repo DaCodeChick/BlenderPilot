@@ -61,7 +61,7 @@ class BlenderPilotPreferences(AddonPreferences):
         items=[
             ("openai", "OpenAI", "Use OpenAI API (GPT-4, etc.)"),
             ("anthropic", "Anthropic", "Use Anthropic API (Claude, etc.)"),
-            ("local", "Local (Ollama/LM Studio)", "Use local OpenAI-compatible server"),
+            ("local", "Local", "Use local OpenAI-compatible server"),
         ],
         default="openai",
     )
