@@ -15,11 +15,11 @@ from typing import Any, Dict, Optional
 
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    from mcp_server.handlers import execute_tool  # type: ignore
-    from mcp_server.tools import get_tool_definitions  # type: ignore
+    from mcp_server.handler_modules import HANDLERS  # type: ignore
+    from mcp_server.tool_definitions import get_tool_definitions  # type: ignore
 else:
-    from .handlers import execute_tool
-    from .tools import get_tool_definitions
+    from .handler_modules import HANDLERS
+    from .tool_definitions import get_tool_definitions
 
 
 JSONRPC_VERSION = "2.0"
@@ -76,7 +76,10 @@ def _handle_request(request: Dict[str, Any]) -> Optional[Dict[str, Any]]:
             return _error(-32602, "Invalid params: missing tool name", req_id)
 
         try:
-            result = execute_tool(tool_name, arguments)
+            handler = HANDLERS.get(tool_name)
+            if handler is None:
+                return _error(-32602, f"Unknown tool: {tool_name}", req_id)
+            result = handler(arguments)
         except Exception as exc:
             return _error(-32000, f"Tool execution failed: {exc}", req_id)
 

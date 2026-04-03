@@ -18,13 +18,13 @@ try:
     from ..core.provider_factory import create_provider  # type: ignore
     from ..core.sdk_installer import SDKInstaller  # type: ignore
     from ..core.validators import ToolCallValidator  # type: ignore
-    from ..mcp_server.tools import get_tool_definitions  # type: ignore
+    from ..mcp_server.tool_definitions import get_tool_definitions  # type: ignore
 except Exception:  # pragma: no cover
     from core.mcp_bridge import MCPBridge  # type: ignore
     from core.provider_factory import create_provider  # type: ignore
     from core.sdk_installer import SDKInstaller  # type: ignore
     from core.validators import ToolCallValidator  # type: ignore
-    from mcp_server.tools import get_tool_definitions  # type: ignore
+    from mcp_server.tool_definitions import get_tool_definitions  # type: ignore
 
 
 def _friendly_error_message(raw_error: str) -> str:

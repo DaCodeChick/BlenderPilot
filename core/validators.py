@@ -6,9 +6,9 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 try:
-    from ..mcp_server.tools import TOOLS_BY_NAME  # type: ignore
+    from ..mcp_server.tool_definitions import TOOLS_BY_NAME  # type: ignore
 except Exception:  # pragma: no cover
-    from mcp_server.tools import TOOLS_BY_NAME  # type: ignore
+    from mcp_server.tool_definitions import TOOLS_BY_NAME  # type: ignore
 
 
 @dataclass

@@ -231,9 +231,7 @@ BlenderPilot/
 │   └── providers/            # Provider implementations
 ├── mcp_server/               # MCP server subprocess
 │   ├── main.py              # Server entry point
-│   ├── tools.py             # Tool catalog compatibility layer
 │   ├── tool_definitions/    # Modular MCP tool schemas
-│   ├── handlers.py          # Handler dispatcher
 │   └── handler_modules/     # Modular tool handlers
 ├── ops/                     # Blender operators
 ├── ui/                      # UI panels

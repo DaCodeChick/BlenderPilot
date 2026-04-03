@@ -8,4 +8,4 @@ This directory contains modular MCP tool schema catalogs grouped by domain:
 - `scene.py`: camera/light/scene tools
 - `schema.py`: shared schema builders
 
-`mcp_server/tools.py` re-exports the combined catalog for backward compatibility.
+Use `mcp_server/tool_definitions/__init__.py` for the composed catalog.

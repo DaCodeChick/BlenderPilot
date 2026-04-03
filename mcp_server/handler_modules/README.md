@@ -7,4 +7,4 @@ This directory contains modular MCP tool handlers grouped by domain:
 - `scene.py`: camera/light/scene setup handlers
 - `context.py`: shared Blender access helpers
 
-`mcp_server/handlers.py` serves as a thin dispatcher compatibility layer.
+Use `mcp_server/handler_modules/__init__.py` for the handler registry.
