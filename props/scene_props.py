@@ -59,6 +59,20 @@ class BlenderPilotProperties(PropertyGroup):
         maxlen=4096,
     )
 
+    batch_mode: BoolProperty(
+        name="Batch Mode",
+        description="Treat each non-empty line as a separate prompt",
+        default=False,
+    )
+
+    batch_max_items: IntProperty(
+        name="Batch Max Items",
+        description="Maximum prompts processed in one batch run",
+        default=5,
+        min=1,
+        max=50,
+    )
+
     # Status
     status: StringProperty(
         name="Status",

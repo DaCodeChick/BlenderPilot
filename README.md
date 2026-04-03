@@ -34,6 +34,7 @@ BlenderPilot is a Blender 5.1+ addon that lets you create 3D models, materials, 
 - Prompt history (saved after successful runs)
 - Favorite prompts
 - Reload previous prompts from history
+- Batch mode (one prompt per line)
 
 ---
 

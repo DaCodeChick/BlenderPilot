@@ -58,6 +58,11 @@ class BLENDERPILOT_PT_main_panel(Panel):
         layout.label(text="Prompt:", icon="TEXT")
         layout.prop(props, "prompt", text="")
 
+        batch_row = layout.row(align=True)
+        batch_row.prop(props, "batch_mode", text="Batch Mode")
+        if props.batch_mode:
+            batch_row.prop(props, "batch_max_items", text="Max")
+
         # Example Prompts
         box = layout.box()
         box.label(text="Example Prompts:", icon="LIGHTPROBE_GRID")

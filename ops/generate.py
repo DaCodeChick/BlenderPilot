@@ -80,6 +80,66 @@ class BLENDERPILOT_OT_generate(Operator):
         props = context.scene.blenderpilot
         return bool(props.prompt.strip()) and not props.is_generating
 
+    def _run_single_prompt(
+        self,
+        prompt: str,
+        provider_name: str,
+        prefs,
+        props,
+        provider,
+        bridge: MCPBridge,
+        validator: ToolCallValidator,
+    ) -> int:
+        available_tools = get_tool_definitions()
+
+        max_attempts = 3
+        delay_seconds = 0.75
+        provider_response = None
+        last_error = "Provider request failed"
+        for attempt in range(1, max_attempts + 1):
+            provider_response = provider.generate_tool_calls(
+                prompt=prompt,
+                available_tools=available_tools,
+                max_tokens=prefs.max_tokens,
+                temperature=prefs.temperature,
+            )
+            if provider_response.success:
+                break
+            last_error = provider_response.error or last_error
+            if attempt < max_attempts and _is_retryable_error(last_error):
+                props.status = f"Retrying provider ({attempt}/{max_attempts - 1})..."
+                time.sleep(delay_seconds)
+                delay_seconds *= 2
+                continue
+            break
+
+        if provider_response is None:
+            raise ValueError("Provider returned no response")
+        if not provider_response.success:
+            raise ValueError(
+                _friendly_error_message(provider_response.error or last_error)
+            )
+
+        bridge.initialize()
+        bridge.list_tools()
+
+        for call in provider_response.tool_calls:
+            validation = validator.validate(call.tool_name, call.arguments)
+            if not validation.valid:
+                raise ValueError(
+                    validation.error or f"Invalid tool call: {call.tool_name}"
+                )
+            bridge.call_tool(call.tool_name, call.arguments)
+
+        history_item = props.prompt_history.add()
+        history_item.prompt = prompt
+        history_item.provider = provider_name
+        history_item.created_at = datetime.now(timezone.utc).isoformat()
+        history_item.favorite = False
+        props.prompt_history_index = len(props.prompt_history) - 1
+
+        return len(provider_response.tool_calls)
+
     def execute(self, context):
         """Execute the generation."""
         scene = context.scene
@@ -113,65 +173,34 @@ class BLENDERPILOT_OT_generate(Operator):
                     raise ValueError(message)
 
             provider = create_provider(provider_name, prefs)
-            available_tools = get_tool_definitions()
 
             if provider_name == "local" and not provider.test_connection():
                 raise ValueError(
                     "Local provider is unreachable. Use Test Local Connection in preferences."
                 )
 
-            max_attempts = 3
-            delay_seconds = 0.75
-            provider_response = None
-            last_error = "Provider request failed"
-            for attempt in range(1, max_attempts + 1):
-                provider_response = provider.generate_tool_calls(
-                    prompt=prompt,
-                    available_tools=available_tools,
-                    max_tokens=prefs.max_tokens,
-                    temperature=prefs.temperature,
-                )
-                if provider_response.success:
-                    break
-                last_error = provider_response.error or last_error
-                if attempt < max_attempts and _is_retryable_error(last_error):
-                    props.status = (
-                        f"Retrying provider ({attempt}/{max_attempts - 1})..."
-                    )
-                    time.sleep(delay_seconds)
-                    delay_seconds *= 2
-                    continue
-                break
+            prompts = [prompt]
+            if props.batch_mode:
+                prompts = [line.strip() for line in prompt.splitlines() if line.strip()]
+                prompts = prompts[: props.batch_max_items]
 
-            if provider_response is None:
-                raise ValueError("Provider returned no response")
-            if not provider_response.success:
-                raise ValueError(
-                    _friendly_error_message(provider_response.error or last_error)
+            total_tool_calls = 0
+            for i, prompt_item in enumerate(prompts, start=1):
+                props.status = f"Processing {i}/{len(prompts)}..."
+                total_tool_calls += self._run_single_prompt(
+                    prompt_item,
+                    provider_name,
+                    prefs,
+                    props,
+                    provider,
+                    bridge,
+                    validator,
                 )
 
-            bridge.initialize()
-            bridge.list_tools()
-
-            for call in provider_response.tool_calls:
-                validation = validator.validate(call.tool_name, call.arguments)
-                if not validation.valid:
-                    raise ValueError(
-                        validation.error or f"Invalid tool call: {call.tool_name}"
-                    )
-                bridge.call_tool(call.tool_name, call.arguments)
-
-            history_item = props.prompt_history.add()
-            history_item.prompt = prompt
-            history_item.provider = provider_name
-            history_item.created_at = datetime.now(timezone.utc).isoformat()
-            history_item.favorite = False
-            props.prompt_history_index = len(props.prompt_history) - 1
-
-            props.status = f"Executed {len(provider_response.tool_calls)} tool call(s)"
+            props.status = f"Executed {total_tool_calls} tool call(s) across {len(prompts)} prompt(s)"
             self.report(
                 {"INFO"},
-                f"MCP tool calls executed: {len(provider_response.tool_calls)}",
+                f"MCP tool calls executed: {total_tool_calls}",
             )
         except Exception as exc:
             props.last_error = _friendly_error_message(str(exc))
