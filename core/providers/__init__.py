@@ -9,6 +9,11 @@
 """AI provider implementations for OpenAI, Anthropic, etc."""
 
 from .anthropic_provider import AnthropicProvider
+from .local_provider import LocalProvider
 from .openai_provider import OpenAIProvider
 
-__all__ = ["OpenAIProvider", "AnthropicProvider"]
+__all__ = [
+    "OpenAIProvider",
+    "AnthropicProvider",
+    "LocalProvider",
+]

@@ -8,6 +8,7 @@ from typing import Optional
 
 from .provider_interface import ProviderInterface
 from .providers.anthropic_provider import AnthropicProvider
+from .providers.local_provider import LocalProvider
 from .providers.openai_provider import OpenAIProvider
 
 
@@ -26,6 +27,8 @@ def _pick_api_key(provider_name: str, prefs) -> Optional[str]:
         return prefs.openai_api_key or os.environ.get("OPENAI_API_KEY")
     if provider_name == "anthropic":
         return prefs.anthropic_api_key or os.environ.get("ANTHROPIC_API_KEY")
+    if provider_name == "local":
+        return prefs.local_api_key or os.environ.get("LOCAL_API_KEY") or ""
     return None
 
 
@@ -35,16 +38,17 @@ def create_provider(provider_name: str, prefs) -> ProviderInterface:
         _load_env_file()
 
     api_key = _pick_api_key(provider_name, prefs)
-    if not api_key:
+    if provider_name in {"openai", "anthropic"} and not api_key:
         raise ValueError(f"Missing API key for provider: {provider_name}")
 
-    kwargs = {
-        "model": "gpt-4.1-mini"
-        if provider_name == "openai"
-        else "claude-3-5-haiku-latest"
-    }
     if provider_name == "openai":
-        return OpenAIProvider(api_key, **kwargs)
+        return OpenAIProvider(api_key, model="gpt-4.1-mini")
     if provider_name == "anthropic":
-        return AnthropicProvider(api_key, **kwargs)
+        return AnthropicProvider(api_key, model="claude-3-5-haiku-latest")
+    if provider_name == "local":
+        return LocalProvider(
+            api_key,
+            model=prefs.local_model,
+            base_url=prefs.local_base_url,
+        )
     raise ValueError(f"Unsupported provider: {provider_name}")

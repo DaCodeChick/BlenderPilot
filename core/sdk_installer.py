@@ -21,6 +21,7 @@ class SDKInstaller:
     PROVIDERS = {
         "openai": "openai",
         "anthropic": "anthropic",
+        "local": None,
     }
 
     @staticmethod
@@ -149,6 +150,9 @@ class SDKInstaller:
             return False, f"Unknown provider: {provider_name}"
 
         package_name = cls.PROVIDERS[provider_name]
+
+        if package_name is None:
+            return True, f"{provider_name} uses local HTTP API (no SDK required)"
 
         # 1. Check if already importable
         if cls.can_import(package_name):

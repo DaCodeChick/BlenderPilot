@@ -25,6 +25,7 @@ class BlenderPilotPreferences(AddonPreferences):
         items=[
             ("openai", "OpenAI", "Use OpenAI API (GPT-4, etc.)"),
             ("anthropic", "Anthropic", "Use Anthropic API (Claude, etc.)"),
+            ("local", "Local (Ollama/LM Studio)", "Use local OpenAI-compatible server"),
         ],
         default="openai",
     )
@@ -40,6 +41,25 @@ class BlenderPilotPreferences(AddonPreferences):
     anthropic_api_key: StringProperty(
         name="Anthropic API Key",
         description="Your Anthropic API key (starts with sk-ant-)",
+        default="",
+        subtype="PASSWORD",
+    )
+
+    local_base_url: StringProperty(
+        name="Local Base URL",
+        description="OpenAI-compatible base URL for local provider",
+        default="http://127.0.0.1:1234/v1",
+    )
+
+    local_model: StringProperty(
+        name="Local Model",
+        description="Model name served by your local provider",
+        default="local-model",
+    )
+
+    local_api_key: StringProperty(
+        name="Local API Key (Optional)",
+        description="Optional API key for local gateway setups",
         default="",
         subtype="PASSWORD",
     )
@@ -91,6 +111,12 @@ class BlenderPilotPreferences(AddonPreferences):
         box.prop(self, "anthropic_api_key")
         box.prop(self, "use_env_file")
 
+        local_box = layout.box()
+        local_box.label(text="Local Provider", icon="CONSOLE")
+        local_box.prop(self, "local_base_url")
+        local_box.prop(self, "local_model")
+        local_box.prop(self, "local_api_key")
+
         if self.use_env_file:
             box.label(text="Note: .env file will override these keys", icon="INFO")
 
@@ -103,6 +129,11 @@ class BlenderPilotPreferences(AddonPreferences):
             box.label(
                 text="You must manually install: pip install openai anthropic",
                 icon="ERROR",
+            )
+        else:
+            box.label(
+                text="Local provider mode uses HTTP endpoint (no SDK install required)",
+                icon="INFO",
             )
 
         # Advanced Settings

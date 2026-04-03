@@ -171,12 +171,23 @@ BlenderPilot supports multiple AI providers. Configure them in **Preferences > A
 |----------|------|----------|
 | **OpenAI** | Most mature, strong tool calling | General use, structured output |
 | **Anthropic** | Long context, strong reasoning | Complex scenes, detailed materials |
+| **Local (Ollama/LM Studio)** | Fully local, no cloud dependency | Private/local workflows |
 
 ### Advanced Settings
 
 - **Max Tokens**: Maximum length of AI responses (default: 4096)
 - **Temperature**: Creativity level (0.0 = deterministic, 1.0 = creative, default: 0.7)
 - **Auto-Install SDKs**: Automatically install provider SDKs if missing (default: on)
+
+### Local Provider Setup
+
+For local models, select `Local (Ollama/LM Studio)` in addon preferences.
+
+- Common local endpoints:
+  - Ollama: `http://127.0.0.1:11434/v1`
+  - LM Studio: `http://127.0.0.1:1234/v1`
+
+No cloud API key is required for local mode unless your local gateway enforces auth.
 
 ---
 

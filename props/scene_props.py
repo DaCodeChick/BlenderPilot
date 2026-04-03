@@ -56,6 +56,7 @@ class BlenderPilotProperties(PropertyGroup):
         items=[
             ("openai", "OpenAI", "Use OpenAI API"),
             ("anthropic", "Anthropic", "Use Anthropic API"),
+            ("local", "Local (Ollama/LM Studio)", "Use local OpenAI-compatible server"),
         ],
         default="openai",
     )

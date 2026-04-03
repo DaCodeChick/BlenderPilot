@@ -45,7 +45,12 @@ class BLENDERPILOT_PT_main_panel(Panel):
         else:
             provider = prefs.provider
 
-        provider_name = "OpenAI" if provider == "openai" else "Anthropic"
+        provider_name_map = {
+            "openai": "OpenAI",
+            "anthropic": "Anthropic",
+            "local": "Local (Ollama/LM Studio)",
+        }
+        provider_name = provider_name_map.get(provider, provider)
         box.label(text=f"Provider: {provider_name}", icon="NETWORK_DRIVE")
 
         # Prompt Input
