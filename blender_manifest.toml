@@ -1,0 +1,38 @@
+schema_version = "1.0.0"
+
+# Unique identifier for the extension
+id = "blenderpilot"
+
+# Extension version
+version = "0.1.0"
+
+# Display name
+name = "BlenderPilot"
+
+# Short description (one line)
+tagline = "AI-driven Blender automation via MCP"
+
+# Maintainer information
+maintainer = "BlenderPilot Contributors <https://github.com/yourusername/BlenderPilot>"
+
+# Extension type
+type = "add-on"
+
+# Tags for discoverability
+tags = ["3D View", "AI", "Automation", "Modeling", "Material"]
+
+# Minimum Blender version
+blender_version_min = "5.1.0"
+
+# License
+license = ["SPDX:GPL-3.0-or-later"]
+
+# Permissions required by this extension
+[permissions]
+network = "Access AI provider APIs (OpenAI, Anthropic)"
+files = "Read .env configuration file"
+
+# Optional: website and documentation links
+[build]
+# Paths to exclude from the extension package
+# paths_exclude_pattern = ["tests/*", ".*", "__pycache__/*"]
