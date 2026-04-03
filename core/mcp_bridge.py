@@ -44,6 +44,13 @@ class MCPBridge:
                 self.process.wait(timeout=2)
             except subprocess.TimeoutExpired:
                 self.process.kill()
+                self.process.wait(timeout=2)
+        if self.process.stdin:
+            self.process.stdin.close()
+        if self.process.stdout:
+            self.process.stdout.close()
+        if self.process.stderr:
+            self.process.stderr.close()
         self.process = None
 
     def _next_id(self) -> int:
