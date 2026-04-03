@@ -43,7 +43,7 @@ if vendor_dir.exists() and str(vendor_dir) not in sys.path:
 # Import submodules
 from .props import preferences, scene_props
 from .ui import panels
-from .ops import generate
+from .ops import generate, history
 
 
 # Module list for registration
@@ -52,6 +52,7 @@ modules = (
     scene_props,
     panels,
     generate,
+    history,
 )
 
 

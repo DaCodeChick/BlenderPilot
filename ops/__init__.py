@@ -8,4 +8,6 @@
 
 """Blender operators for BlenderPilot."""
 
-__all__ = []
+from . import generate, history
+
+__all__ = ["generate", "history"]

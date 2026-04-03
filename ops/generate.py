@@ -9,6 +9,7 @@
 """Main generation operator for BlenderPilot."""
 
 import time
+from datetime import datetime, timezone
 
 import bpy
 from bpy.types import Operator
@@ -159,6 +160,13 @@ class BLENDERPILOT_OT_generate(Operator):
                         validation.error or f"Invalid tool call: {call.tool_name}"
                     )
                 bridge.call_tool(call.tool_name, call.arguments)
+
+            history_item = props.prompt_history.add()
+            history_item.prompt = prompt
+            history_item.provider = provider_name
+            history_item.created_at = datetime.now(timezone.utc).isoformat()
+            history_item.favorite = False
+            props.prompt_history_index = len(props.prompt_history) - 1
 
             props.status = f"Executed {len(provider_response.tool_calls)} tool call(s)"
             self.report(

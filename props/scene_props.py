@@ -10,7 +10,42 @@
 
 import bpy
 from bpy.types import PropertyGroup
-from bpy.props import StringProperty, BoolProperty, EnumProperty
+from bpy.props import (
+    StringProperty,
+    BoolProperty,
+    EnumProperty,
+    CollectionProperty,
+    IntProperty,
+)
+
+
+class BlenderPilotPromptHistoryItem(PropertyGroup):
+    """A single prompt history item."""
+
+    prompt: StringProperty(
+        name="Prompt",
+        description="Saved prompt text",
+        default="",
+        maxlen=4096,
+    )
+
+    provider: StringProperty(
+        name="Provider",
+        description="Provider used for this prompt",
+        default="",
+    )
+
+    created_at: StringProperty(
+        name="Created At",
+        description="Timestamp for this prompt record",
+        default="",
+    )
+
+    favorite: BoolProperty(
+        name="Favorite",
+        description="Whether this prompt is favorited",
+        default=False,
+    )
 
 
 class BlenderPilotProperties(PropertyGroup):
@@ -61,8 +96,24 @@ class BlenderPilotProperties(PropertyGroup):
         default="openai",
     )
 
+    prompt_history: CollectionProperty(
+        name="Prompt History",
+        description="History of submitted prompts",
+        type=BlenderPilotPromptHistoryItem,
+    )
 
-classes = (BlenderPilotProperties,)
+    prompt_history_index: IntProperty(
+        name="Prompt History Index",
+        description="Active history item index",
+        default=0,
+        min=0,
+    )
+
+
+classes = (
+    BlenderPilotPromptHistoryItem,
+    BlenderPilotProperties,
+)
 
 
 def register():

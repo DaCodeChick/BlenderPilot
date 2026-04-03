@@ -111,9 +111,58 @@ class BLENDERPILOT_PT_settings_panel(Panel):
         ).module = __package__.split(".")[0]
 
 
+class BLENDERPILOT_PT_history_panel(Panel):
+    """Prompt history and favorites panel."""
+
+    bl_label = "Prompt History"
+    bl_idname = "BLENDERPILOT_PT_history_panel"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "BlenderPilot"
+    bl_parent_id = "BLENDERPILOT_PT_main_panel"
+    bl_options = {"DEFAULT_CLOSED"}
+
+    def draw(self, context):
+        layout = self.layout
+        props = context.scene.blenderpilot
+
+        if len(props.prompt_history) == 0:
+            layout.label(text="No prompt history yet", icon="INFO")
+            return
+
+        col = layout.column(align=True)
+        col.prop(props, "prompt_history_index", text="Selected")
+
+        idx = props.prompt_history_index
+        if 0 <= idx < len(props.prompt_history):
+            item = props.prompt_history[idx]
+            row = layout.row(align=True)
+            row.label(text=f"Provider: {item.provider}", icon="NETWORK_DRIVE")
+            icon = "SOLO_ON" if item.favorite else "SOLO_OFF"
+            row.operator("blenderpilot.history_toggle_favorite", text="", icon=icon)
+
+            layout.label(text=f"Saved: {item.created_at}", icon="TIME")
+            layout.label(text=item.prompt[:120])
+
+        row = layout.row(align=True)
+        row.operator(
+            "blenderpilot.history_load_prompt", text="Load Prompt", icon="IMPORT"
+        )
+        row.operator("blenderpilot.history_clear", text="Clear All", icon="TRASH")
+
+        row = layout.row(align=True)
+        op = row.operator(
+            "blenderpilot.history_clear",
+            text="Clear Favorites",
+            icon="TRASH",
+        )
+        op.clear_favorites_only = True
+
+
 classes = (
     BLENDERPILOT_PT_main_panel,
     BLENDERPILOT_PT_settings_panel,
+    BLENDERPILOT_PT_history_panel,
 )
 
 
