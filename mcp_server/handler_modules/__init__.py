@@ -11,6 +11,15 @@ from .materials import (
     set_material_node_texture_image,
     set_material_node_vector_input,
 )
+from .mesh_edit import (
+    mesh_bevel,
+    mesh_extrude_region,
+    mesh_inset,
+    mesh_mark_seam,
+    mesh_mark_sharp,
+    mesh_select_all,
+)
+from .modifiers import add_modifier, apply_modifier, configure_modifier
 from .primitives import (
     create_cone,
     create_cube,
@@ -24,6 +33,8 @@ from .primitives import (
     set_scale,
 )
 from .scene import create_camera, create_light, setup_scene
+from .texture_paint import assign_texture_paint_image, create_texture_image
+from .uv import uv_smart_project, uv_unwrap
 
 
 HANDLERS = {
@@ -37,6 +48,19 @@ HANDLERS = {
     "set_location": set_location,
     "set_rotation": set_rotation,
     "set_scale": set_scale,
+    "mesh_select_all": mesh_select_all,
+    "mesh_extrude_region": mesh_extrude_region,
+    "mesh_bevel": mesh_bevel,
+    "mesh_inset": mesh_inset,
+    "mesh_mark_seam": mesh_mark_seam,
+    "mesh_mark_sharp": mesh_mark_sharp,
+    "add_modifier": add_modifier,
+    "configure_modifier": configure_modifier,
+    "apply_modifier": apply_modifier,
+    "uv_unwrap": uv_unwrap,
+    "uv_smart_project": uv_smart_project,
+    "create_texture_image": create_texture_image,
+    "assign_texture_paint_image": assign_texture_paint_image,
     "apply_material": apply_material,
     "build_material_graph": build_material_graph,
     "build_advanced_material_graph": build_advanced_material_graph,

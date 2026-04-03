@@ -89,6 +89,32 @@ class TestToolCallValidator(unittest.TestCase):
         self.assertFalse(result.valid)
         self.assertIn("at least", result.error or "")
 
+    def test_post_mvp_tools_exist(self):
+        self.assertTrue(
+            self.validator.validate("mesh_select_all", {"object_name": "Cube"}).valid
+        )
+        self.assertTrue(
+            self.validator.validate("mesh_mark_seam", {"object_name": "Cube"}).valid
+        )
+        self.assertTrue(
+            self.validator.validate("mesh_mark_sharp", {"object_name": "Cube"}).valid
+        )
+        self.assertTrue(
+            self.validator.validate(
+                "add_modifier",
+                {"object_name": "Cube", "modifier_type": "SUBSURF"},
+            ).valid
+        )
+        self.assertTrue(
+            self.validator.validate("uv_unwrap", {"object_name": "Cube"}).valid
+        )
+        self.assertTrue(
+            self.validator.validate(
+                "create_texture_image",
+                {"image_name": "PaintTex"},
+            ).valid
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
