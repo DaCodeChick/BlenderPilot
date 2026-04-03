@@ -273,6 +273,18 @@ pip install -r requirements.txt
 
 Artifacts are written to `dist/`.
 
+4. Verify release artifacts and tests:
+```bash
+./scripts/verify_release.sh
+```
+
+### Release Checklist
+
+- Update `CHANGELOG.md`
+- Run `./scripts/verify_release.sh`
+- Build artifacts with `./scripts/package_release.sh <version>`
+- Tag and publish release
+
 ---
 
 ## Architecture
