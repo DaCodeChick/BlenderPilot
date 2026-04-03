@@ -67,4 +67,77 @@ MATERIAL_TOOLS: List[Dict[str, Any]] = [
             "additionalProperties": False,
         },
     },
+    {
+        "name": "add_material_node",
+        "description": "Add a node to an existing material node tree",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "material_name": {"type": "string"},
+                "node_type": {"type": "string"},
+                "node_name": {"type": "string", "default": ""},
+                "location": {
+                    "type": "array",
+                    "items": {"type": "number"},
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "default": [0.0, 0.0],
+                },
+            },
+            "required": ["material_name", "node_type"],
+            "additionalProperties": False,
+        },
+    },
+    {
+        "name": "connect_material_nodes",
+        "description": "Connect output socket from one node to input socket on another node",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "material_name": {"type": "string"},
+                "from_node": {"type": "string"},
+                "from_socket": {"type": "string"},
+                "to_node": {"type": "string"},
+                "to_socket": {"type": "string"},
+            },
+            "required": [
+                "material_name",
+                "from_node",
+                "from_socket",
+                "to_node",
+                "to_socket",
+            ],
+            "additionalProperties": False,
+        },
+    },
+    {
+        "name": "set_material_node_float_input",
+        "description": "Set a float input value on a material node",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "material_name": {"type": "string"},
+                "node_name": {"type": "string"},
+                "input_name": {"type": "string"},
+                "value": {"type": "number"},
+            },
+            "required": ["material_name", "node_name", "input_name", "value"],
+            "additionalProperties": False,
+        },
+    },
+    {
+        "name": "set_material_node_color_input",
+        "description": "Set an RGBA input value on a material node",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "material_name": {"type": "string"},
+                "node_name": {"type": "string"},
+                "input_name": {"type": "string"},
+                "value": color4_schema([1.0, 1.0, 1.0, 1.0]),
+            },
+            "required": ["material_name", "node_name", "input_name", "value"],
+            "additionalProperties": False,
+        },
+    },
 ]

@@ -216,3 +216,145 @@ def build_advanced_material_graph(args: Dict[str, Any]) -> Dict[str, Any]:
         "preset": preset,
         "simulated": False,
     }
+
+
+def _get_material_node_tree(material_name: str):
+    material = bpy.data.materials.get(material_name) if CTX.available else None
+    if material is None:
+        raise ValueError(f"Material not found: {material_name}")
+    material.use_nodes = True
+    node_tree = material.node_tree
+    if not node_tree:
+        raise ValueError(f"Material node tree unavailable: {material_name}")
+    return material, node_tree
+
+
+def add_material_node(args: Dict[str, Any]) -> Dict[str, Any]:
+    material_name = args["material_name"]
+    node_type = args["node_type"]
+    node_name = args.get("node_name", "")
+    location = args.get("location", [0.0, 0.0])
+
+    if not CTX.available:
+        return {
+            "material": material_name,
+            "node_type": node_type,
+            "node_name": node_name or node_type,
+            "simulated": True,
+        }
+
+    _material, node_tree = _get_material_node_tree(material_name)
+    node = node_tree.nodes.new(type=node_type)
+    if node_name:
+        node.name = node_name
+        node.label = node_name
+    node.location = (float(location[0]), float(location[1]))
+    return {
+        "material": material_name,
+        "node_name": node.name,
+        "node_type": node.bl_idname,
+        "simulated": False,
+    }
+
+
+def connect_material_nodes(args: Dict[str, Any]) -> Dict[str, Any]:
+    material_name = args["material_name"]
+    from_node_name = args["from_node"]
+    from_socket_name = args["from_socket"]
+    to_node_name = args["to_node"]
+    to_socket_name = args["to_socket"]
+
+    if not CTX.available:
+        return {
+            "material": material_name,
+            "from": f"{from_node_name}.{from_socket_name}",
+            "to": f"{to_node_name}.{to_socket_name}",
+            "simulated": True,
+        }
+
+    _material, node_tree = _get_material_node_tree(material_name)
+    from_node = node_tree.nodes.get(from_node_name)
+    to_node = node_tree.nodes.get(to_node_name)
+    if not from_node:
+        raise ValueError(f"From node not found: {from_node_name}")
+    if not to_node:
+        raise ValueError(f"To node not found: {to_node_name}")
+
+    from_socket = from_node.outputs.get(from_socket_name)
+    to_socket = to_node.inputs.get(to_socket_name)
+    if from_socket is None:
+        raise ValueError(f"Output socket not found: {from_socket_name}")
+    if to_socket is None:
+        raise ValueError(f"Input socket not found: {to_socket_name}")
+
+    node_tree.links.new(from_socket, to_socket)
+    return {
+        "material": material_name,
+        "from": f"{from_node_name}.{from_socket_name}",
+        "to": f"{to_node_name}.{to_socket_name}",
+        "simulated": False,
+    }
+
+
+def set_material_node_float_input(args: Dict[str, Any]) -> Dict[str, Any]:
+    material_name = args["material_name"]
+    node_name = args["node_name"]
+    input_name = args["input_name"]
+    value = float(args["value"])
+
+    if not CTX.available:
+        return {
+            "material": material_name,
+            "node": node_name,
+            "input": input_name,
+            "value": value,
+            "simulated": True,
+        }
+
+    _material, node_tree = _get_material_node_tree(material_name)
+    node = node_tree.nodes.get(node_name)
+    if not node:
+        raise ValueError(f"Node not found: {node_name}")
+    socket = node.inputs.get(input_name)
+    if socket is None:
+        raise ValueError(f"Input socket not found: {input_name}")
+    socket.default_value = value
+    return {
+        "material": material_name,
+        "node": node_name,
+        "input": input_name,
+        "value": value,
+        "simulated": False,
+    }
+
+
+def set_material_node_color_input(args: Dict[str, Any]) -> Dict[str, Any]:
+    material_name = args["material_name"]
+    node_name = args["node_name"]
+    input_name = args["input_name"]
+    value = args["value"]
+
+    if not CTX.available:
+        return {
+            "material": material_name,
+            "node": node_name,
+            "input": input_name,
+            "value": value,
+            "simulated": True,
+        }
+
+    _material, node_tree = _get_material_node_tree(material_name)
+    node = node_tree.nodes.get(node_name)
+    if not node:
+        raise ValueError(f"Node not found: {node_name}")
+    socket = node.inputs.get(input_name)
+    if socket is None:
+        raise ValueError(f"Input socket not found: {input_name}")
+    socket.default_value = value
+    return {
+        "material": material_name,
+        "node": node_name,
+        "input": input_name,
+        "value": value,
+        "simulated": False,
+    }

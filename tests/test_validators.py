@@ -68,6 +68,14 @@ class TestToolCallValidator(unittest.TestCase):
         )
         self.assertTrue(result.valid)
 
+    def test_material_node_tool_required_fields(self):
+        result = self.validator.validate(
+            "add_material_node",
+            {"material_name": "Mat"},
+        )
+        self.assertFalse(result.valid)
+        self.assertIn("Missing required field", result.error or "")
+
 
 if __name__ == "__main__":
     unittest.main()
