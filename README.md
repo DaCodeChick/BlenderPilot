@@ -231,8 +231,10 @@ BlenderPilot/
 │   └── providers/            # Provider implementations
 ├── mcp_server/               # MCP server subprocess
 │   ├── main.py              # Server entry point
-│   ├── tools.py             # MCP tool definitions
-│   └── handlers.py          # Tool execution
+│   ├── tools.py             # Tool catalog compatibility layer
+│   ├── tool_definitions/    # Modular MCP tool schemas
+│   ├── handlers.py          # Handler dispatcher
+│   └── handler_modules/     # Modular tool handlers
 ├── ops/                     # Blender operators
 ├── ui/                      # UI panels
 ├── props/                   # Property groups
@@ -241,8 +243,16 @@ BlenderPilot/
 
 ### Running Tests
 
+If `pytest` is installed:
+
 ```bash
 python -m pytest tests/
+```
+
+Or run built-in unittest (no extra dependency):
+
+```bash
+python -m unittest discover -s tests -p "test_*.py" -v
 ```
 
 ### Building from Source
@@ -260,12 +270,10 @@ pip install -r requirements.txt
 
 3. Create distribution packages:
 ```bash
-# Classic addon zip
-zip -r BlenderPilot-v0.1.0.zip . -x ".*" -x "tests/*" -x "__pycache__/*"
-
-# Extension zip (same, but includes blender_manifest.toml)
-zip -r BlenderPilot-v0.1.0-extension.zip . -x ".*" -x "tests/*" -x "__pycache__/*"
+./scripts/package_release.sh 0.1.0
 ```
+
+Artifacts are written to `dist/`.
 
 ---
 

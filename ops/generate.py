@@ -8,6 +8,8 @@
 
 """Main generation operator for BlenderPilot."""
 
+import time
+
 import bpy
 from bpy.types import Operator
 
@@ -23,6 +25,38 @@ except Exception:  # pragma: no cover
     from core.sdk_installer import SDKInstaller  # type: ignore
     from core.validators import ToolCallValidator  # type: ignore
     from mcp_server.tools import get_tool_definitions  # type: ignore
+
+
+def _friendly_error_message(raw_error: str) -> str:
+    text = raw_error.lower()
+    if "api key" in text or "unauthorized" in text or "authentication" in text:
+        return (
+            "Authentication failed. Check your provider API key in addon preferences."
+        )
+    if "rate" in text and "limit" in text:
+        return "Provider rate limit reached. Wait a moment and try again."
+    if "timeout" in text or "timed out" in text:
+        return "Provider request timed out. Check connectivity and retry."
+    if "sdk unavailable" in text or "no module named" in text:
+        return "Provider SDK is missing. Enable auto-install SDKs or install manually."
+    if "no tool calls" in text:
+        return "The model did not return tool calls. Try a clearer prompt."
+    return raw_error
+
+
+def _is_retryable_error(raw_error: str) -> bool:
+    text = raw_error.lower()
+    retry_markers = [
+        "timeout",
+        "timed out",
+        "temporarily",
+        "rate limit",
+        "429",
+        "503",
+        "connection reset",
+        "network",
+    ]
+    return any(marker in text for marker in retry_markers)
 
 
 class BLENDERPILOT_OT_generate(Operator):
@@ -73,15 +107,32 @@ class BLENDERPILOT_OT_generate(Operator):
 
             provider = create_provider(provider_name, prefs)
             available_tools = get_tool_definitions()
-            provider_response = provider.generate_tool_calls(
-                prompt=prompt,
-                available_tools=available_tools,
-                max_tokens=prefs.max_tokens,
-                temperature=prefs.temperature,
-            )
+
+            max_attempts = 3
+            delay_seconds = 0.75
+            provider_response = None
+            last_error = "Provider request failed"
+            for attempt in range(1, max_attempts + 1):
+                provider_response = provider.generate_tool_calls(
+                    prompt=prompt,
+                    available_tools=available_tools,
+                    max_tokens=prefs.max_tokens,
+                    temperature=prefs.temperature,
+                )
+                if provider_response.success:
+                    break
+                last_error = provider_response.error or last_error
+                if attempt < max_attempts and _is_retryable_error(last_error):
+                    time.sleep(delay_seconds)
+                    delay_seconds *= 2
+                    continue
+                break
+
+            if provider_response is None:
+                raise ValueError("Provider returned no response")
             if not provider_response.success:
                 raise ValueError(
-                    provider_response.error or "Provider returned an unknown error"
+                    _friendly_error_message(provider_response.error or last_error)
                 )
 
             bridge.initialize()
@@ -101,9 +152,9 @@ class BLENDERPILOT_OT_generate(Operator):
                 f"MCP tool calls executed: {len(provider_response.tool_calls)}",
             )
         except Exception as exc:
-            props.last_error = str(exc)
+            props.last_error = _friendly_error_message(str(exc))
             props.status = "Generation failed"
-            self.report({"ERROR"}, f"BlenderPilot error: {exc}")
+            self.report({"ERROR"}, f"BlenderPilot error: {props.last_error}")
             return {"CANCELLED"}
         finally:
             props.is_generating = False
