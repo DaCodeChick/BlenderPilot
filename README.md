@@ -189,6 +189,8 @@ For local models, select `Local (Ollama/LM Studio)` in addon preferences.
 
 No cloud API key is required for local mode unless your local gateway enforces auth.
 
+Tip: use the **Test Local Connection** button in addon preferences before generating.
+
 ---
 
 ## Troubleshooting
@@ -291,7 +293,6 @@ Artifacts are written to `dist/`.
 
 ### Release Checklist
 
-- Update `CHANGELOG.md`
 - Run `./scripts/verify_release.sh`
 - Build artifacts with `./scripts/package_release.sh <version>`
 - Tag and publish release

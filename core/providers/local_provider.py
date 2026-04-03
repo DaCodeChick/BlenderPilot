@@ -33,15 +33,30 @@ class LocalProvider(ProviderInterface):
         base_url = self.config.get("base_url", "http://127.0.0.1:1234/v1").rstrip("/")
         return f"{base_url}/chat/completions"
 
-    def test_connection(self) -> bool:
-        req = Request(
-            self._chat_completions_url(), method="OPTIONS", headers=self._headers()
-        )
+    def _models_url(self) -> str:
+        base_url = self.config.get("base_url", "http://127.0.0.1:1234/v1").rstrip("/")
+        return f"{base_url}/models"
+
+    @staticmethod
+    def _reachable_http_error(code: int) -> bool:
+        return 400 <= code < 500
+
+    def _probe(self, url: str, method: str = "GET") -> bool:
+        req = Request(url, method=method, headers=self._headers())
         try:
             with urlopen(req, timeout=2):
                 return True
+        except HTTPError as exc:
+            return self._reachable_http_error(exc.code)
         except Exception:
             return False
+
+    def test_connection(self) -> bool:
+        if self._probe(self._models_url(), method="GET"):
+            return True
+        if self._probe(self._chat_completions_url(), method="OPTIONS"):
+            return True
+        return self._probe(self._chat_completions_url(), method="GET")
 
     def generate_tool_calls(
         self,

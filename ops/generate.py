@@ -41,6 +41,12 @@ def _friendly_error_message(raw_error: str) -> str:
         return "Provider SDK is missing. Enable auto-install SDKs or install manually."
     if "no tool calls" in text:
         return "The model did not return tool calls. Try a clearer prompt."
+    if "unknown tool" in text:
+        return "Model returned an unsupported tool. Try again or simplify the prompt."
+    if "invalid tool call" in text or "missing required field" in text:
+        return "Model returned an invalid tool call. Try again with a more explicit prompt."
+    if "local provider" in text and "failed" in text:
+        return "Local provider request failed. Verify local server URL/model and that it is running."
     return raw_error
 
 
@@ -108,6 +114,11 @@ class BLENDERPILOT_OT_generate(Operator):
             provider = create_provider(provider_name, prefs)
             available_tools = get_tool_definitions()
 
+            if provider_name == "local" and not provider.test_connection():
+                raise ValueError(
+                    "Local provider is unreachable. Use Test Local Connection in preferences."
+                )
+
             max_attempts = 3
             delay_seconds = 0.75
             provider_response = None
@@ -123,6 +134,9 @@ class BLENDERPILOT_OT_generate(Operator):
                     break
                 last_error = provider_response.error or last_error
                 if attempt < max_attempts and _is_retryable_error(last_error):
+                    props.status = (
+                        f"Retrying provider ({attempt}/{max_attempts - 1})..."
+                    )
                     time.sleep(delay_seconds)
                     delay_seconds *= 2
                     continue
