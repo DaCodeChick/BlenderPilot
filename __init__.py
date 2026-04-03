@@ -29,7 +29,6 @@ bl_info = {
 
 
 # Module imports
-import bpy
 import sys
 from pathlib import Path
 
@@ -42,17 +41,17 @@ if vendor_dir.exists() and str(vendor_dir) not in sys.path:
 
 
 # Import submodules
-from . import props
-from . import ui
-from . import ops
+from .props import preferences, scene_props
+from .ui import panels
+from .ops import generate
 
 
 # Module list for registration
 modules = (
-    props.preferences,
-    props.scene_props,
-    ui.panels,
-    ops.generate,
+    preferences,
+    scene_props,
+    panels,
+    generate,
 )
 
 
