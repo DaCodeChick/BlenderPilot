@@ -7,6 +7,16 @@ from typing import Any, Dict, List
 from .schema import color4_schema
 
 
+def _vector_schema(default: List[float], size: int) -> Dict[str, Any]:
+    return {
+        "type": "array",
+        "items": {"type": "number"},
+        "minItems": size,
+        "maxItems": size,
+        "default": default,
+    }
+
+
 MATERIAL_TOOLS: List[Dict[str, Any]] = [
     {
         "name": "apply_material",
@@ -137,6 +147,40 @@ MATERIAL_TOOLS: List[Dict[str, Any]] = [
                 "value": color4_schema([1.0, 1.0, 1.0, 1.0]),
             },
             "required": ["material_name", "node_name", "input_name", "value"],
+            "additionalProperties": False,
+        },
+    },
+    {
+        "name": "set_material_node_vector_input",
+        "description": "Set a vector input value on a material node",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "material_name": {"type": "string"},
+                "node_name": {"type": "string"},
+                "input_name": {"type": "string"},
+                "value": _vector_schema([0.0, 0.0, 0.0], 3),
+            },
+            "required": ["material_name", "node_name", "input_name", "value"],
+            "additionalProperties": False,
+        },
+    },
+    {
+        "name": "set_material_node_texture_image",
+        "description": "Assign an image file to an Image Texture node",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "material_name": {"type": "string"},
+                "node_name": {"type": "string"},
+                "image_path": {"type": "string"},
+                "colorspace": {
+                    "type": "string",
+                    "enum": ["sRGB", "Non-Color"],
+                    "default": "sRGB",
+                },
+            },
+            "required": ["material_name", "node_name", "image_path"],
             "additionalProperties": False,
         },
     },

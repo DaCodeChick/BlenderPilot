@@ -8,6 +8,8 @@ from .materials import (
     connect_material_nodes,
     set_material_node_color_input,
     set_material_node_float_input,
+    set_material_node_texture_image,
+    set_material_node_vector_input,
 )
 from .primitives import (
     create_cone,
@@ -42,6 +44,8 @@ HANDLERS = {
     "connect_material_nodes": connect_material_nodes,
     "set_material_node_float_input": set_material_node_float_input,
     "set_material_node_color_input": set_material_node_color_input,
+    "set_material_node_vector_input": set_material_node_vector_input,
+    "set_material_node_texture_image": set_material_node_texture_image,
     "create_light": create_light,
     "create_camera": create_camera,
     "setup_scene": setup_scene,

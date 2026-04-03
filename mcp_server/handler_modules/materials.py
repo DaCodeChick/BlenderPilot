@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any, Dict
 
 from .context import CTX, bpy
@@ -356,5 +357,79 @@ def set_material_node_color_input(args: Dict[str, Any]) -> Dict[str, Any]:
         "node": node_name,
         "input": input_name,
         "value": value,
+        "simulated": False,
+    }
+
+
+def set_material_node_vector_input(args: Dict[str, Any]) -> Dict[str, Any]:
+    material_name = args["material_name"]
+    node_name = args["node_name"]
+    input_name = args["input_name"]
+    value = args["value"]
+
+    if not CTX.available:
+        return {
+            "material": material_name,
+            "node": node_name,
+            "input": input_name,
+            "value": value,
+            "simulated": True,
+        }
+
+    _material, node_tree = _get_material_node_tree(material_name)
+    node = node_tree.nodes.get(node_name)
+    if not node:
+        raise ValueError(f"Node not found: {node_name}")
+    socket = node.inputs.get(input_name)
+    if socket is None:
+        raise ValueError(f"Input socket not found: {input_name}")
+    socket.default_value = value
+    return {
+        "material": material_name,
+        "node": node_name,
+        "input": input_name,
+        "value": value,
+        "simulated": False,
+    }
+
+
+def set_material_node_texture_image(args: Dict[str, Any]) -> Dict[str, Any]:
+    material_name = args["material_name"]
+    node_name = args["node_name"]
+    image_path = args["image_path"]
+    colorspace = args.get("colorspace", "sRGB")
+
+    if not CTX.available:
+        return {
+            "material": material_name,
+            "node": node_name,
+            "image_path": image_path,
+            "colorspace": colorspace,
+            "simulated": True,
+        }
+
+    path = Path(image_path)
+    if not path.exists() or not path.is_file():
+        raise ValueError(f"Image path not found: {image_path}")
+
+    _material, node_tree = _get_material_node_tree(material_name)
+    node = node_tree.nodes.get(node_name)
+    if not node:
+        raise ValueError(f"Node not found: {node_name}")
+    if node.bl_idname != "ShaderNodeTexImage":
+        raise ValueError(f"Node is not an Image Texture node: {node_name}")
+
+    image = bpy.data.images.load(str(path), check_existing=True)
+    node.image = image
+    if colorspace == "Non-Color":
+        node.image.colorspace_settings.name = "Non-Color"
+    else:
+        node.image.colorspace_settings.name = "sRGB"
+
+    return {
+        "material": material_name,
+        "node": node_name,
+        "image": image.filepath,
+        "colorspace": node.image.colorspace_settings.name,
         "simulated": False,
     }

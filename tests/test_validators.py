@@ -76,6 +76,19 @@ class TestToolCallValidator(unittest.TestCase):
         self.assertFalse(result.valid)
         self.assertIn("Missing required field", result.error or "")
 
+    def test_material_vector_input_shape(self):
+        result = self.validator.validate(
+            "set_material_node_vector_input",
+            {
+                "material_name": "Mat",
+                "node_name": "Mapping",
+                "input_name": "Scale",
+                "value": [1.0, 2.0],
+            },
+        )
+        self.assertFalse(result.valid)
+        self.assertIn("at least", result.error or "")
+
 
 if __name__ == "__main__":
     unittest.main()
