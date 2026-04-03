@@ -59,6 +59,19 @@ class BlenderPilotProperties(PropertyGroup):
         maxlen=4096,
     )
 
+    use_image_input: BoolProperty(
+        name="Use Image Input",
+        description="Attach an image for vision-capable providers",
+        default=False,
+    )
+
+    image_path: StringProperty(
+        name="Image Path",
+        description="Path to input image",
+        default="",
+        subtype="FILE_PATH",
+    )
+
     batch_mode: BoolProperty(
         name="Batch Mode",
         description="Treat each non-empty line as a separate prompt",

@@ -10,6 +10,7 @@
 
 import bpy
 from bpy.types import Panel
+from pathlib import Path
 
 
 class BLENDERPILOT_PT_main_panel(Panel):
@@ -57,6 +58,16 @@ class BLENDERPILOT_PT_main_panel(Panel):
         layout.separator()
         layout.label(text="Prompt:", icon="TEXT")
         layout.prop(props, "prompt", text="")
+
+        vision_box = layout.box()
+        vision_box.label(text="Image Input", icon="IMAGE_DATA")
+        vision_box.prop(props, "use_image_input", text="Enable Image Input")
+        if props.use_image_input:
+            vision_box.prop(props, "image_path", text="")
+            exists = bool(props.image_path) and Path(props.image_path).exists()
+            icon = "CHECKMARK" if exists else "ERROR"
+            text = "Image ready" if exists else "Select a valid image file"
+            vision_box.label(text=text, icon=icon)
 
         batch_row = layout.row(align=True)
         batch_row.prop(props, "batch_mode", text="Batch Mode")

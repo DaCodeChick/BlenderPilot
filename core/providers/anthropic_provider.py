@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import base64
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from ..provider_interface import ProviderInterface, ProviderResponse, ToolCall
@@ -33,6 +35,7 @@ class AnthropicProvider(ProviderInterface):
         available_tools: List[Dict[str, Any]],
         max_tokens: Optional[int] = None,
         temperature: Optional[float] = None,
+        image_path: Optional[str] = None,
     ) -> ProviderResponse:
         try:
             import anthropic  # type: ignore
@@ -45,6 +48,26 @@ class AnthropicProvider(ProviderInterface):
 
         try:
             client = anthropic.Anthropic(api_key=self.api_key)
+            user_content: Any = prompt
+            if image_path:
+                p = Path(image_path)
+                if not p.exists() or not p.is_file():
+                    return ProviderResponse(
+                        [], None, f"Anthropic image path not found: {image_path}"
+                    )
+                image_b64 = base64.b64encode(p.read_bytes()).decode("ascii")
+                user_content = [
+                    {"type": "text", "text": prompt},
+                    {
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": "image/png",
+                            "data": image_b64,
+                        },
+                    },
+                ]
+
             response = client.messages.create(
                 model=model,
                 max_tokens=max_out,
@@ -53,7 +76,7 @@ class AnthropicProvider(ProviderInterface):
                     "You are BlenderPilot. Use tools to satisfy the user prompt. "
                     "Prefer precise, minimal tool calls."
                 ),
-                messages=[{"role": "user", "content": prompt}],
+                messages=[{"role": "user", "content": user_content}],
                 tools=[
                     {
                         "name": tool["name"],

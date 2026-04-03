@@ -48,6 +48,10 @@ def _friendly_error_message(raw_error: str) -> str:
         return "Model returned an invalid tool call. Try again with a more explicit prompt."
     if "local provider" in text and "failed" in text:
         return "Local provider request failed. Verify local server URL/model and that it is running."
+    if "vision input is not supported" in text:
+        return "Selected provider does not support image input. Use OpenAI or Anthropic for image prompts."
+    if "image path not found" in text:
+        return "Image path is invalid. Select an existing image file."
     return raw_error
 
 
@@ -89,6 +93,7 @@ class BLENDERPILOT_OT_generate(Operator):
         provider,
         bridge: MCPBridge,
         validator: ToolCallValidator,
+        image_path: str | None,
     ) -> int:
         available_tools = get_tool_definitions()
 
@@ -102,6 +107,7 @@ class BLENDERPILOT_OT_generate(Operator):
                 available_tools=available_tools,
                 max_tokens=prefs.max_tokens,
                 temperature=prefs.temperature,
+                image_path=image_path,
             )
             if provider_response.success:
                 break
@@ -179,6 +185,18 @@ class BLENDERPILOT_OT_generate(Operator):
                     "Local provider is unreachable. Use Test Local Connection in preferences."
                 )
 
+            image_path = None
+            if props.use_image_input:
+                image_path = props.image_path.strip() or None
+                if not image_path:
+                    raise ValueError(
+                        "Image input enabled but no image path is selected"
+                    )
+                if not provider.supports_vision():
+                    raise ValueError(
+                        "Vision input is not supported by selected provider"
+                    )
+
             prompts = [prompt]
             if props.batch_mode:
                 prompts = [line.strip() for line in prompt.splitlines() if line.strip()]
@@ -195,6 +213,7 @@ class BLENDERPILOT_OT_generate(Operator):
                     provider,
                     bridge,
                     validator,
+                    image_path,
                 )
 
             props.status = f"Executed {total_tool_calls} tool call(s) across {len(prompts)} prompt(s)"

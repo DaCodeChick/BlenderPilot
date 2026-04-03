@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import base64
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from ..provider_interface import ProviderInterface, ProviderResponse, ToolCall
@@ -33,6 +35,7 @@ class OpenAIProvider(ProviderInterface):
         available_tools: List[Dict[str, Any]],
         max_tokens: Optional[int] = None,
         temperature: Optional[float] = None,
+        image_path: Optional[str] = None,
     ) -> ProviderResponse:
         try:
             from openai import OpenAI  # type: ignore
@@ -45,6 +48,26 @@ class OpenAIProvider(ProviderInterface):
 
         try:
             client = OpenAI(api_key=self.api_key)
+            user_message: Dict[str, Any] = {"role": "user", "content": prompt}
+            if image_path:
+                p = Path(image_path)
+                if not p.exists() or not p.is_file():
+                    return ProviderResponse(
+                        [], None, f"OpenAI image path not found: {image_path}"
+                    )
+                image_bytes = p.read_bytes()
+                image_b64 = base64.b64encode(image_bytes).decode("ascii")
+                user_message = {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt},
+                        {
+                            "type": "image_url",
+                            "image_url": {"url": f"data:image/png;base64,{image_b64}"},
+                        },
+                    ],
+                }
+
             response = client.chat.completions.create(
                 model=model,
                 messages=[
@@ -55,7 +78,7 @@ class OpenAIProvider(ProviderInterface):
                             "Select tools that best satisfy the user prompt."
                         ),
                     },
-                    {"role": "user", "content": prompt},
+                    user_message,
                 ],
                 tools=[
                     {

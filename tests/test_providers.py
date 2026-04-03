@@ -18,7 +18,7 @@ class TestProviders(unittest.TestCase):
             "", base_url="http://127.0.0.1:1234/v1", model="local-model"
         )
         self.assertEqual(provider.name, "Local")
-        self.assertFalse(provider.supports_vision())
+        self.assertTrue(provider.supports_vision())
 
     def test_anthropic_provider_metadata(self):
         provider = AnthropicProvider("test-key")

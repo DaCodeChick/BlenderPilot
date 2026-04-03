@@ -68,6 +68,7 @@ class ProviderInterface(ABC):
         available_tools: List[Dict[str, Any]],
         max_tokens: Optional[int] = None,
         temperature: Optional[float] = None,
+        image_path: Optional[str] = None,
     ) -> ProviderResponse:
         """
         Generate MCP tool calls from a user prompt.
@@ -77,6 +78,7 @@ class ProviderInterface(ABC):
             available_tools: List of available MCP tools with their schemas
             max_tokens: Maximum tokens for the response
             temperature: Sampling temperature (0.0-2.0)
+            image_path: Optional path to an input image for vision-capable models
 
         Returns:
             ProviderResponse with tool calls or error

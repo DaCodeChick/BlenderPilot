@@ -5,7 +5,9 @@ Supports Ollama, LM Studio, and similar local endpoints via the same adapter.
 
 from __future__ import annotations
 
+import base64
 import json
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -21,7 +23,7 @@ class LocalProvider(ProviderInterface):
         return "Local"
 
     def supports_vision(self) -> bool:
-        return False
+        return True
 
     def _headers(self) -> Dict[str, str]:
         headers = {"Content-Type": "application/json"}
@@ -64,7 +66,24 @@ class LocalProvider(ProviderInterface):
         available_tools: List[Dict[str, Any]],
         max_tokens: Optional[int] = None,
         temperature: Optional[float] = None,
+        image_path: Optional[str] = None,
     ) -> ProviderResponse:
+        user_content: Any = prompt
+        if image_path:
+            p = Path(image_path)
+            if not p.exists() or not p.is_file():
+                return ProviderResponse(
+                    [], None, f"Local provider image path not found: {image_path}"
+                )
+            image_b64 = base64.b64encode(p.read_bytes()).decode("ascii")
+            user_content = [
+                {"type": "text", "text": prompt},
+                {
+                    "type": "image_url",
+                    "image_url": {"url": f"data:image/png;base64,{image_b64}"},
+                },
+            ]
+
         payload = {
             "model": self.config.get("model", "local-model"),
             "messages": [
@@ -72,7 +91,7 @@ class LocalProvider(ProviderInterface):
                     "role": "system",
                     "content": "You are BlenderPilot. Use function tool calls to satisfy the user prompt.",
                 },
-                {"role": "user", "content": prompt},
+                {"role": "user", "content": user_content},
             ],
             "tools": [
                 {
