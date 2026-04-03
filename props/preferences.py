@@ -9,8 +9,44 @@
 """Addon preferences for API keys and settings."""
 
 import bpy
-from bpy.types import AddonPreferences
+from bpy.types import AddonPreferences, Operator
 from bpy.props import StringProperty, EnumProperty, BoolProperty
+
+try:
+    from ..core.provider_factory import create_provider  # type: ignore
+except Exception:  # pragma: no cover
+    from core.provider_factory import create_provider  # type: ignore
+
+
+class BLENDERPILOT_OT_test_local_connection(Operator):
+    """Test connection to configured local provider endpoint."""
+
+    bl_idname = "blenderpilot.test_local_connection"
+    bl_label = "Test Local Connection"
+    bl_description = "Validate local endpoint and model settings"
+
+    def execute(self, context):
+        addon_name = __package__.split(".")[0]
+        prefs = context.preferences.addons[addon_name].preferences
+
+        try:
+            provider = create_provider("local", prefs)
+            ok = provider.test_connection()
+            if ok:
+                prefs.local_connection_status = "Local connection successful"
+                self.report({"INFO"}, "Local provider connection successful")
+                return {"FINISHED"}
+
+            prefs.local_connection_status = "Local connection failed"
+            self.report(
+                {"ERROR"},
+                "Could not connect to local provider. Check base URL and server state.",
+            )
+            return {"CANCELLED"}
+        except Exception as exc:
+            prefs.local_connection_status = f"Local connection error: {exc}"
+            self.report({"ERROR"}, f"Local connection error: {exc}")
+            return {"CANCELLED"}
 
 
 class BlenderPilotPreferences(AddonPreferences):
@@ -62,6 +98,12 @@ class BlenderPilotPreferences(AddonPreferences):
         description="Optional API key for local gateway setups",
         default="",
         subtype="PASSWORD",
+    )
+
+    local_connection_status: StringProperty(
+        name="Local Connection Status",
+        description="Result of latest local provider connection test",
+        default="Not tested",
     )
 
     # Advanced Settings
@@ -116,6 +158,12 @@ class BlenderPilotPreferences(AddonPreferences):
         local_box.prop(self, "local_base_url")
         local_box.prop(self, "local_model")
         local_box.prop(self, "local_api_key")
+        local_box.operator(
+            "blenderpilot.test_local_connection",
+            text="Test Local Connection",
+            icon="URL",
+        )
+        local_box.label(text=f"Status: {self.local_connection_status}", icon="INFO")
 
         if self.use_env_file:
             box.label(text="Note: .env file will override these keys", icon="INFO")
@@ -150,7 +198,10 @@ class BlenderPilotPreferences(AddonPreferences):
         ).url = "https://github.com/yourusername/BlenderPilot"
 
 
-classes = (BlenderPilotPreferences,)
+classes = (
+    BLENDERPILOT_OT_test_local_connection,
+    BlenderPilotPreferences,
+)
 
 
 def register():
