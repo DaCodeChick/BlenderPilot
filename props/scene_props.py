@@ -65,11 +65,31 @@ class BlenderPilotProperties(PropertyGroup):
         default=False,
     )
 
+    image_source: EnumProperty(
+        name="Image Source",
+        description="Choose where image input comes from",
+        items=[
+            ("file", "File Path", "Use an image file on disk"),
+            (
+                "project",
+                "Blender Image",
+                "Use an existing image datablock in this project",
+            ),
+        ],
+        default="file",
+    )
+
     image_path: StringProperty(
         name="Image Path",
         description="Path to input image",
         default="",
         subtype="FILE_PATH",
+    )
+
+    project_image_name: StringProperty(
+        name="Project Image",
+        description="Name of an existing image datablock in this Blender project",
+        default="",
     )
 
     batch_mode: BoolProperty(

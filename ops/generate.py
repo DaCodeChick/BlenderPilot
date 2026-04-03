@@ -10,6 +10,7 @@
 
 import time
 from datetime import datetime, timezone
+from pathlib import Path
 
 import bpy
 from bpy.types import Operator
@@ -68,6 +69,65 @@ def _is_retryable_error(raw_error: str) -> bool:
         "network",
     ]
     return any(marker in text for marker in retry_markers)
+
+
+def _resolve_image_input(props) -> str | None:
+    if not props.use_image_input:
+        return None
+
+    if props.image_source == "file":
+        image_path = props.image_path.strip()
+        if not image_path:
+            raise ValueError("Image input enabled but no image path is selected")
+        p = Path(image_path)
+        if not p.exists() or not p.is_file():
+            raise ValueError(f"Image path not found: {image_path}")
+        return str(p)
+
+    if props.image_source == "project":
+        image_name = props.project_image_name.strip()
+        if not image_name:
+            raise ValueError("Image input enabled but no Blender image is selected")
+        image = bpy.data.images.get(image_name)
+        if image is None:
+            raise ValueError(f"Blender image not found: {image_name}")
+        if image.packed_file is None and (not image.filepath):
+            raise ValueError(
+                "Selected Blender image has no file path and is not packed. Save or pack it first."
+            )
+
+        temp_path = bpy.path.abspath("//")
+        if not temp_path:
+            temp_path = "/tmp"
+        export_path = Path(temp_path) / f"blenderpilot_input_{image.name}.png"
+        image.save_render(filepath=str(export_path))
+        return str(export_path)
+
+    raise ValueError(f"Unsupported image source: {props.image_source}")
+
+
+def _project_image_names() -> list[str]:
+    return [img.name for img in bpy.data.images]
+
+
+def _augment_prompt_with_project_context(prompt: str, props) -> str:
+    if not props.use_image_input or props.image_source != "project":
+        return prompt
+    image_names = _project_image_names()
+    if not image_names:
+        return prompt
+    selected = props.project_image_name.strip()
+    context_lines = [
+        "",
+        "Blender project image context:",
+        f"- available_images: {', '.join(image_names)}",
+    ]
+    if selected:
+        context_lines.append(f"- selected_image: {selected}")
+        context_lines.append(
+            "- if referencing project textures, prefer using this exact image name"
+        )
+    return prompt + "\n" + "\n".join(context_lines)
 
 
 class BLENDERPILOT_OT_generate(Operator):
@@ -185,17 +245,9 @@ class BLENDERPILOT_OT_generate(Operator):
                     "Local provider is unreachable. Use Test Local Connection in preferences."
                 )
 
-            image_path = None
-            if props.use_image_input:
-                image_path = props.image_path.strip() or None
-                if not image_path:
-                    raise ValueError(
-                        "Image input enabled but no image path is selected"
-                    )
-                if not provider.supports_vision():
-                    raise ValueError(
-                        "Vision input is not supported by selected provider"
-                    )
+            image_path = _resolve_image_input(props)
+            if image_path and not provider.supports_vision():
+                raise ValueError("Vision input is not supported by selected provider")
 
             prompts = [prompt]
             if props.batch_mode:
@@ -205,8 +257,12 @@ class BLENDERPILOT_OT_generate(Operator):
             total_tool_calls = 0
             for i, prompt_item in enumerate(prompts, start=1):
                 props.status = f"Processing {i}/{len(prompts)}..."
-                total_tool_calls += self._run_single_prompt(
+                prompt_with_context = _augment_prompt_with_project_context(
                     prompt_item,
+                    props,
+                )
+                total_tool_calls += self._run_single_prompt(
+                    prompt_with_context,
                     provider_name,
                     prefs,
                     props,

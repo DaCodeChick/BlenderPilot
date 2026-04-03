@@ -63,11 +63,33 @@ class BLENDERPILOT_PT_main_panel(Panel):
         vision_box.label(text="Image Input", icon="IMAGE_DATA")
         vision_box.prop(props, "use_image_input", text="Enable Image Input")
         if props.use_image_input:
-            vision_box.prop(props, "image_path", text="")
-            exists = bool(props.image_path) and Path(props.image_path).exists()
-            icon = "CHECKMARK" if exists else "ERROR"
-            text = "Image ready" if exists else "Select a valid image file"
-            vision_box.label(text=text, icon=icon)
+            vision_box.prop(props, "image_source", text="Source")
+            if props.image_source == "file":
+                vision_box.prop(props, "image_path", text="")
+                exists = bool(props.image_path) and Path(props.image_path).exists()
+                icon = "CHECKMARK" if exists else "ERROR"
+                text = "Image ready" if exists else "Select a valid image file"
+                vision_box.label(text=text, icon=icon)
+            else:
+                vision_box.prop_search(
+                    props,
+                    "project_image_name",
+                    bpy.data,
+                    "images",
+                    text="Blender Image",
+                    icon="IMAGE_DATA",
+                )
+                exists = (
+                    bool(props.project_image_name)
+                    and bpy.data.images.get(props.project_image_name) is not None
+                )
+                icon = "CHECKMARK" if exists else "ERROR"
+                text = (
+                    "Project image ready"
+                    if exists
+                    else "Select an existing Blender image datablock"
+                )
+                vision_box.label(text=text, icon=icon)
 
         batch_row = layout.row(align=True)
         batch_row.prop(props, "batch_mode", text="Batch Mode")
